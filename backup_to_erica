@@ -1,0 +1,37 @@
+
+RSYNCOPTIONS=-Cauvzni
+# MOREOPTIONS="--append --delete"
+MOREOPTIONS="--delete"
+
+THISHOST=$(cat /etc/hostname)
+BACKUPHOST="erica:"
+
+# BACKUPDIR=/data/backup/$THISHOST
+BACKUPMOUNTPOINT=/bigger
+BACKUPDIR=${BACKUPMOUNTPOINT}/backup/${THISHOST}
+BACKUPPLACE=${BACKUPHOST}${BACKUPDIR}
+
+# Ensure that BACKUPDIR is mounted on the BACKUPHOST
+if [ ! "` ssh ${BACKUPHOST%:} mount | grep ${BACKUPMOUNTPOINT} `" ] ; then
+	echo A backup drive is not mounted on ${BACKUPHOST}${BACKUPMOUNTPOINT}
+	exit 1 
+fi
+
+
+if [ -z "$THISHOST" -o "$THISHOST" = "localhost" ]; then
+	echo Bad host name \($THISHOST\). Set /etc/hostname
+else
+	echo "-----------------------------------------------"
+	echo Backing up to $BACKUPPLACE
+	date
+#	time rsync $RSYNCOPTIONS --exclude-from=/backup_exclude \
+#		/ $BACKUPPLACE &&
+	time rsync $RSYNCOPTIONS $MOREOPTIONS \
+		--exclude-from=/backup_exclude / $BACKUPPLACE &&
+		[ ! `echo $RSYNCOPTIONS|grep n` ] &&
+			( ssh ${BACKUPHOST%:} touch $BACKUPDIR/backup_completed
+			  echo $BACKUPPLACE `date` > /last_backup )
+	date
+	echo "###############################################"
+fi
+

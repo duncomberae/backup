@@ -1,0 +1,23 @@
+/dev
+/proc
+/srv
+/sys
+/tmp
+/var/lib
+/var/lock
+/var/log
+/var/run
+/var/tmp
+/var/cache
+/mnt
+/media
+/big
+/bigger
+/swapfile*
+Cache
+.beagle
+.google
+.gvfs
+# /home/SUSE
+# /home/UBUNTU
+# /home/duncombe/asttexhome

@@ -1,0 +1,39 @@
+
+RSYNCOPTIONS=-auv
+# MOREOPTIONS="--append --delete"
+MOREOPTIONS="--delete"
+
+THISHOST=$(cat /etc/hostname)
+BACKUPHOST=""
+
+# BACKUPDIR=/data/backup/$THISHOST
+BACKUPMOUNTPOINT=/big
+BACKUPDIR=${BACKUPMOUNTPOINT}/backup/grace-snapshot
+BACKUPDIR=${BACKUPMOUNTPOINT}/backup/${THISHOST}-snapshots/snapshot-201009070804
+BACKUPPLACE=${BACKUPHOST}${BACKUPDIR}
+
+# Ensure that BACKUPDIR is mounted on the BACKUPHOST
+if [ ! "` mount | grep $BACKUPMOUNTPOINT `" ] ; then
+	echo Ensure a backup drive is mounted on $BACKUPMOUNTPOINT 
+	exit 1 
+fi
+
+
+if [ -z "$THISHOST" -o "$THISHOST" = "localhost" ]; then
+	echo Bad host name \($THISHOST\). Set /etc/hostname
+else
+	echo "-----------------------------------------------"
+	echo Backing up to $BACKUPPLACE
+	date
+#	time rsync $RSYNCOPTIONS --exclude-from=/backup_exclude \
+#		/ $BACKUPPLACE &&
+	time rsync $RSYNCOPTIONS $MOREOPTIONS \
+		--exclude-from=/backup_exclude / $BACKUPPLACE &&
+		[ ! `echo $RSYNCOPTIONS|grep n` ] &&
+			( touch $BACKUPDIR/backup_completed
+			  echo $BACKUPPLACE `date` > /last_backup )
+		# ssh ${BACKUPHOST%:} touch $BACKUPDIR/backup_completed
+	date
+	echo "###############################################"
+fi
+
