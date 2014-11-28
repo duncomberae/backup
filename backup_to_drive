@@ -5,13 +5,18 @@ RSYNCOPTIONS=-auv
 # MOREOPTIONS="--append --delete"
 MOREOPTIONS="--delete"
 
-THISHOST=$(cat /etc/hostname)
+if [ -e /etc/hostname ]; then 
+	THISHOST=$(cat /etc/hostname)
+else
+	echo Cannot reliably identify this host \(no /etc/hostname\)
+	exit 2
+fi 
 # BACKUPHOST="localhost:"
 BACKUPHOST=""
 
 # BACKUPDIR=/data/backup/$THISHOST
 # BACKUPMOUNTPOINT=/bigger
-BACKUPMOUNTPOINT=/big
+BACKUPMOUNTPOINT=/media/Passport
 BACKUPDIR=${BACKUPMOUNTPOINT}/backup/${THISHOST}
 BACKUPPLACE=${BACKUPHOST}${BACKUPDIR}
 
