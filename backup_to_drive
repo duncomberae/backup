@@ -16,13 +16,16 @@ BACKUPHOST=""
 
 # BACKUPDIR=/data/backup/$THISHOST
 # BACKUPMOUNTPOINT=/bigger
-BACKUPMOUNTPOINT=/media/Passport
-BACKUPDIR=${BACKUPMOUNTPOINT}/backup/${THISHOST}
+BACKUPMOUNTPOINT=/media/Passport1
+BACKUPROOT=${BACKUPMOUNTPOINT}/backup
+BACKUPDIR=${BACKUPROOT}/${THISHOST}
 BACKUPPLACE=${BACKUPHOST}${BACKUPDIR}
+BACKUPLOG=/tmp/backup_`date "+%Y%m%d%H%M"`
 
 # Ensure that BACKUPDIR is mounted on the BACKUPHOST
-if [ ! "` mount | grep $BACKUPMOUNTPOINT `" ] ; then
-	echo Ensure a backup drive is mounted on $BACKUPMOUNTPOINT 
+if [ ! "` mount | grep ${BACKUPMOUNTPOINT} `" -o ! -e "${BACKUPROOT}" ] ; then
+	echo Ensure a backup drive is mounted on \"$BACKUPMOUNTPOINT\" 
+	echo and \"${BACKUPROOT}\" exists
 	exit 1 
 fi
 
@@ -30,6 +33,7 @@ fi
 if [ -z "$THISHOST" -o "$THISHOST" = "localhost" ]; then
 	echo Bad host name \($THISHOST\). Set /etc/hostname
 else
+	{
 	echo "-----------------------------------------------"
 	echo Backing up to $BACKUPPLACE
 	date
@@ -42,6 +46,12 @@ else
 			  echo $BACKUPPLACE `date` > /last_backup )
 		# ssh ${BACKUPHOST%:} touch $BACKUPDIR/backup_completed
 	date
-	echo "###############################################"
+	echo "###############################################" 
+	} | tee ${BACKUPLOG}.log 2>&1 
+
+	find ${BACKUPPLACE} -ls | sed "s=${BACKUPPLACE}/==" > $BACKUPLOG.list
+	mv ${BACKUPLOG}.list ${BACKUPPLACE}
 fi
+
+# vi: se nowrap tw=0 :
 
